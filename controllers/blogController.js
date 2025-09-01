@@ -11,6 +11,24 @@ module.exports.getBlogs = async (req, res) => {
     }
 }
 
+module.exports.getBlog = async (req, res) => {
+    try {
+        const blogId = parseInt(req.params.blogId);
+        const blog = await prisma.post.findUnique({
+            where: {
+                id: blogId
+            }
+        });
+
+        if (!blog) return res.status(404).json({ error: "Blog post not found" });
+
+        res.status(200).json(blog);
+    } catch (error) {
+        console.error("Error fetching specific blog post");
+        res.status(500).json({ error: "Error fetching specific blog post" });
+    }
+}
+
 module.exports.getComments = async (req, res) => {
     try {
         const { blogId } = req.params;
