@@ -1,12 +1,12 @@
 const router = require("express").Router();
 const controller = require("../controllers/blogController");
-const { verifyToken } = require("../controllers/utils");
+const { verifyToken, isAuthor } = require("../controllers/utils");
 
-router.get("/", controller.getBlogs);
-router.get("/:blogId", controller.getBlog);
-router.post("/", controller.createBlog);
-router.get("/:blogId/comments", controller.getComments);
-router.post("/:blogId/comments", controller.createComment);
-router.delete("/:blogId", verifyToken, controller.deleteBlog);
+router.get("/",verifyToken, isAuthor, controller.getBlogs);
+router.get("/:blogId",verifyToken, isAuthor, controller.getBlog);
+router.post("/", verifyToken, isAuthor, controller.createBlog);
+router.get("/:blogId/comments", verifyToken, isAuthor, controller.getComments);
+router.post("/:blogId/comments", verifyToken, isAuthor, controller.createComment);
+router.delete("/:blogId", verifyToken, isAuthor, controller.deleteBlog);
 
 module.exports = router;

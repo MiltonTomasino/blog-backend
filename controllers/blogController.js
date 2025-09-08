@@ -3,6 +3,8 @@ const prisma = new PrismaClient();
 
 module.exports.getBlogs = async (req, res) => {
 
+    console.log("Cookies: ", req.cookies);
+    
     if (!req.cookies.token) res.redirect("http://localhost:3001/login")
 
     try {

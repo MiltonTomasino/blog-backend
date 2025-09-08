@@ -112,7 +112,7 @@ module.exports.loginUser = async (req, res) => {
             sameSite: "lax",
             maxAge: 1000 * 60 * 60
         })
-
+        
         res.status(200).json({ message: "Login successful"});
     } catch (error) {
         console.error("Error logging in user: ", error);
@@ -123,6 +123,7 @@ module.exports.loginUser = async (req, res) => {
 
 module.exports.checkAuth = (req, res) => {
     const token = req.cookies.token;
+    
     if (!token) {
         return res.json({ loggedIn: false });
     }
