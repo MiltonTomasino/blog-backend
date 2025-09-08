@@ -2,8 +2,37 @@ const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 
 module.exports.getBlogs = async (req, res) => {
+
+    if (!req.cookies.token) res.redirect("http://localhost:3001/login")
+
     try {
-        const blogs = await prisma.post.findMany();
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 5;
+        const skip = (page - 1) * pageSize;
+
+        const blogs = await prisma.post.findMany({
+            skip: skip,
+            take: pageSize,
+            orderBy: {
+                createdAt: "desc",
+            },
+            include: {
+                comments: {
+                    include: {
+                        user: {
+                            select: {
+                                username: true,
+                            }
+                        }
+                    }
+                },
+                user: {
+                    select: {
+                        username: true,
+                    }
+                }
+            },
+        });    
         res.json(blogs)
     } catch (error) {
         console.error("Error retrieving blogs: ", error);
@@ -80,6 +109,27 @@ module.exports.createComment = async (req, res) => {
     } catch (error) {
         console.error("Error creating comment");
         res.status(500).json("There was an error trying to add comment to blog post");
+    }
+}
+
+module.exports.deleteBlog = async (req, res) => {
+    try {
+        const { blogId } = req.params;
+
+        if (req.user.role !== "AUTHOR") {
+            return res.status(403).json({ error: "User is not authorized to delete blog post." });
+        }
+
+        await prisma.post.delete({
+            where: {
+                id: parseInt(blogId)
+            }
+        });
+        res.status(200).json({ message: "Successfully deleted blog post."})
+    } catch (error) {
+        console.error("Error deleting blog post: ", error);
+        res.status(500).json({ error: "There was an error trying to delete blog post." });
+        
     }
 }
 

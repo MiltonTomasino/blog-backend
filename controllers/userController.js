@@ -2,6 +2,9 @@ const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
+const utils = require("../controllers/utils");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 async function generatePassword(password) {
     try {
@@ -44,7 +47,7 @@ module.exports.createUser = async (req, res) => {
             }
         });
 
-        res.status(201).json({ message: `User created successfully ${user}` });
+        res.status(201).json({ message: `User created successfully` });
     } catch (error) {
         console.error("Error creating user.", error);
         res.status(500).json({ error: "There was an error trying to create a user."});
@@ -87,4 +90,57 @@ module.exports.deleteUser = async (req, res) => {
         res.status(500).json({ error: "There was an error when trying to delete user." });
         
     }
+}
+
+module.exports.loginUser = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const user = await prisma.user.findUnique({ where: {username: username }});
+        if (!user) return res.status(401).json({ error: "User not found."});
+        const isValid = await validatePassword(password, user.password);
+        if (!isValid) return res.status(401).json({ error: "Invalid password."});
+
+        const token = jwt.sign(
+            {id: user.id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 1000 * 60 * 60
+        })
+
+        res.status(200).json({ message: "Login successful"});
+    } catch (error) {
+        console.error("Error logging in user: ", error);
+        res.status(500).json({ error: "Login failed." });
+           
+    }
+}
+
+module.exports.checkAuth = (req, res) => {
+    const token = req.cookies.token;
+    if (!token) {
+        return res.json({ loggedIn: false });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, authData) => {
+        if (err) {
+            return res.json({ loggedIn: false });
+        }
+        res.json({ loggedIn: true, user: authData });
+    });
+}
+
+module.exports.logOutUser = (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+    });
+    // res.status(200).json({ message: "Successfully logged out user."});
+    res.redirect("http://localhost:3001/login")
 }
