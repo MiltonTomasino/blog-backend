@@ -65,7 +65,6 @@ module.exports.addAuthorAuth = async (req, res) => {
                 role: "AUTHOR"
             }
         })
-        console.log(user);
         res.status(200).json({ message: "Successfully updated user to Author." })
     } catch (error) {
         console.error("Error upgrading user to Author");
@@ -112,8 +111,10 @@ module.exports.loginUser = async (req, res) => {
             sameSite: "lax",
             maxAge: 1000 * 60 * 60
         })
+
+        // res.json({ success: true, userId: user.id});
         
-        res.status(200).json({ message: "Login successful"});
+        res.status(200).json({ message: "Login successful", userId: user.id});
     } catch (error) {
         console.error("Error logging in user: ", error);
         res.status(500).json({ error: "Login failed." });
@@ -132,6 +133,8 @@ module.exports.checkAuth = (req, res) => {
         if (err) {
             return res.json({ loggedIn: false });
         }
+        console.log("authData", authData);
+        
         res.json({ loggedIn: true, user: authData });
     });
 }

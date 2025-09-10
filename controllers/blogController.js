@@ -2,8 +2,6 @@ const { PrismaClient } = require("../generated/prisma");
 const prisma = new PrismaClient();
 
 module.exports.getBlogs = async (req, res) => {
-
-    console.log("Cookies: ", req.cookies);
     
     if (!req.cookies.token) res.redirect("http://localhost:3001/login")
 
@@ -79,11 +77,13 @@ module.exports.getComments = async (req, res) => {
 
 module.exports.createBlog = async (req, res) => {
     try {
+        console.log("req", req.body);
+        
         const { userId, title, content } = req.body;
 
         const blog = await prisma.post.create({
             data: {
-                userId: userId,
+                userId: parseInt(userId),
                 title: title,
                 content: content
             }
