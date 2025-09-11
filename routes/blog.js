@@ -6,7 +6,8 @@ router.get("/",verifyToken, isAuthor, controller.getBlogs);
 router.get("/:blogId",verifyToken, isAuthor, controller.getBlog);
 router.post("/", verifyToken, isAuthor, controller.createBlog);
 router.get("/:blogId/comments", verifyToken, isAuthor, controller.getComments);
-router.post("/:blogId/comments", verifyToken, isAuthor, controller.createComment);
+router.post("/:blogId/comments", verifyToken, controller.createComment);
 router.delete("/:blogId", verifyToken, isAuthor, controller.deleteBlog);
+router.delete("/comment/:commentId", verifyToken, isAuthor, controller.deleteComment);
 
 module.exports = router;

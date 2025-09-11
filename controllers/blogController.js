@@ -139,5 +139,26 @@ module.exports.deleteBlog = async (req, res) => {
     }
 }
 
+module.exports.deleteComment = async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        
+        if (req.user.role !== "AUTHOR") {
+            return res.status(403).json({ error: "User is not authorized to delete blog post." });
+        }
+
+        await prisma.comment.delete({
+            where: {
+                id: parseInt(commentId),
+            }
+        })
+        res.status(200).json({ message: "Successfully deleted comment."})
+    } catch (error) {
+        console.error("Error deleting comment: ", error);
+        res.status(500).json({ message: "There was an error deleting message." })
+        
+    }
+}
+
 
 
