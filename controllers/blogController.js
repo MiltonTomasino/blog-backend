@@ -99,17 +99,21 @@ module.exports.createBlog = async (req, res) => {
 module.exports.createComment = async (req, res) => {
     try {
         const postId = parseInt(req.params.blogId);
-        const { commenterId, text } = req.body;
+        const commenterId = req.user.id
+        console.log("Body: ", req.body);
+        
+        const { comment } = req.body;
         await prisma.comment.create({
             data: {
                 postId: postId,
                 commenterId: commenterId,
-                text: text
+                text: comment
             }
         });
-        res.status(200).json({ message: "Succeffully added comment to blog post" });
+        res.redirect("http://localhost:3001/")
+        // res.status(200).json({ message: "Succeffully added comment to blog post" });
     } catch (error) {
-        console.error("Error creating comment");
+        console.error("Error creating comment: ", error);
         res.status(500).json("There was an error trying to add comment to blog post");
     }
 }
