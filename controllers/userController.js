@@ -133,7 +133,7 @@ module.exports.checkAuth = (req, res) => {
         if (err) {
             return res.json({ loggedIn: false });
         }
-        console.log("authData", authData);
+        // console.log("authData", authData);
         
         res.json({ loggedIn: true, user: authData });
     });

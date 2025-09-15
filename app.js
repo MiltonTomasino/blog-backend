@@ -6,10 +6,15 @@ const blogRouter = require("./routes/blog");
 const userRouter = require("./routes/user");
 const app = express();
 
+const allowedOrigins = [
+    "http://localhost:3001",
+    "http://localhost:5173"
+]
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-    origin: "http://localhost:3001",
+    origin: allowedOrigins,
     credentials: true,
 }));
 app.use(methodOverride("_method"));

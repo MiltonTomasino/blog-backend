@@ -10,30 +10,33 @@ module.exports.getBlogs = async (req, res) => {
         const pageSize = parseInt(req.query.pageSize) || 5;
         const skip = (page - 1) * pageSize;
 
-        const blogs = await prisma.post.findMany({
-            skip: skip,
-            take: pageSize,
-            orderBy: {
-                createdAt: "desc",
-            },
-            include: {
-                comments: {
-                    include: {
-                        user: {
-                            select: {
-                                username: true,
+        const [blogs, totalCount] = await Promise.all([
+            prisma.post.findMany({
+                skip: skip,
+                take: pageSize,
+                orderBy: {
+                    createdAt: "desc",
+                },
+                include: {
+                    comments: {
+                        include: {
+                            user: {
+                                select: {
+                                    username: true,
+                                }
                             }
+                        }
+                    },
+                    user: {
+                        select: {
+                            username: true,
                         }
                     }
                 },
-                user: {
-                    select: {
-                        username: true,
-                    }
-                }
-            },
-        });    
-        res.json(blogs)
+            }),
+            prisma.post.count()
+        ])   
+        res.json({ blogs: blogs, totalPages: Math.ceil(totalCount / pageSize), currentPage: page })
     } catch (error) {
         console.error("Error retrieving blogs: ", error);
         res.status(500).json({ error: "Failed to fetch blogs" });
@@ -77,7 +80,7 @@ module.exports.getComments = async (req, res) => {
 
 module.exports.createBlog = async (req, res) => {
     try {
-        console.log("req", req.body);
+        // console.log("req", req.body);
         
         const { userId, title, content } = req.body;
 
@@ -100,7 +103,7 @@ module.exports.createComment = async (req, res) => {
     try {
         const postId = parseInt(req.params.blogId);
         const commenterId = req.user.id
-        console.log("Body: ", req.body);
+        // console.log("Body: ", req.body);
         
         const { comment } = req.body;
         await prisma.comment.create({
@@ -110,8 +113,12 @@ module.exports.createComment = async (req, res) => {
                 text: comment
             }
         });
-        res.redirect("http://localhost:3001/")
-        // res.status(200).json({ message: "Succeffully added comment to blog post" });
+
+        if (req.query.source === "react") {
+            res.status(200).json({ message: "Succeffully added comment to blog post" });
+        } else {
+            res.redirect("http://localhost:3001/")
+        }
     } catch (error) {
         console.error("Error creating comment: ", error);
         res.status(500).json("There was an error trying to add comment to blog post");
