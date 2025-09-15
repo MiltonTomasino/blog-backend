@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 module.exports.getBlogs = async (req, res) => {
     
-    if (!req.cookies.token) res.redirect("http://localhost:3001/login")
+    if (!req.cookies.token) return res.redirect("http://localhost:3001/login")
 
     try {
         const page = parseInt(req.query.page) || 1;
