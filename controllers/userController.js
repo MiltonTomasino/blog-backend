@@ -145,6 +145,10 @@ module.exports.logOutUser = (req, res) => {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
     });
-    // res.status(200).json({ message: "Successfully logged out user."});
-    res.redirect("http://localhost:3001/login")
+
+    if (req.query.source === "react") {
+        res.status(200).json({ message: "Succeffully logged out" });
+    } else {
+        res.redirect("http://localhost:3001/")
+    }
 }
